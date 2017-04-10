@@ -434,13 +434,16 @@ class ZKLib {
 		
 			$usersData = '';
 			if($size = $this->getPrepareDataSize()) {
-				@socket_recvfrom($this->socket, $usersData, $size, MSG_WAITALL, $this->ip, $this->port);
+				do {
+					$size -= @socket_recvfrom($this->socket, $data, $size, 0, $this->ip, $this->port);
+					$usersData .= substr($data, 8);
+				} while($size > 0);
 			}
 			@socket_recvfrom($this->socket, $data, 1024, 0, $this->ip, $this->port);
 			$result = array();
 			if ($usersData){
-				foreach (str_split(substr($usersData, 12), 72) as $userInfo){
-					$user = unpack('vrecordId/Crole/Z8password/Z24name/VcardNo/x9/Z9userId', $userInfo);
+				foreach (str_split(substr($usersData, 4), 72) as $userInfo){
+					$user = unpack('vrecordId/Crole/Z8password/Z24name/VcardNo/x9/Z9userId', str_pad($userInfo, 72, '\0'));
 					$user['name'] = $user['name'];
 					$result[$user['recordId']] = \ZKLib\User::construct($user); 
 				}
@@ -457,7 +460,7 @@ class ZKLib {
 	 */
 	public function getFreeSize()
 	{
-		if ($free_sizes_info = $this->execute(self::CMD_GET_FREE_SIZES)) {
+		if (($free_sizes_info = $this->execute(self::CMD_GET_FREE_SIZES)) && is_string($free_sizes_info)) {
 			if (!defined('__ZKLib_Capacity')){
 				require_once __DIR__.'/ZKLib/Capacity.php';
 			}
