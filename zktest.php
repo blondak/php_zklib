@@ -63,10 +63,10 @@
             <?php
             try {
                 //$zk->clearUsers();
-		//$zk->setUser(\ZKLib\User::construct(1, \ZKLib\User::PRIVILEGE_ADMIN, '1', 'Admin', '', ''));
+		//$zk->setUser(\ZKLib\User::construct(1, \ZKLib\User::PRIVILEGE_SUPERADMIN, '1', 'Admin', '', ''));
 		foreach($zk->getUser() as $user):
 		    $role = 'Unknown';
-		    switch ($user->getRole){
+		    switch ($user->getRole()){
 			case \ZKLib\User::PRIVILEGE_COMMON_USER : $role = 'USER'; break;
 			case \ZKLib\User::PRIVILEGE_ENROLLER    : $role = 'ENROLLER'; break;
 			case \ZKLib\User::PRIVILEGE_MANAGER     : $role = 'MANAGER'; break;
