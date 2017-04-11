@@ -2,10 +2,10 @@
 	namespace ZKLib;
 	
 	class User {
-		const PRIVILEGE_COMMON_USER = 0b000;
-		const PRIVILEGE_ENROLLER    = 0b001;
-		const PRIVILEGE_MANAGER     = 0b110;
-		const PRIVILEGE_SUPERADMIN  = 0b111;
+		const PRIVILEGE_COMMON_USER = 0b0000;
+		const PRIVILEGE_ENROLLER    = 0b0010;
+		const PRIVILEGE_MANAGER     = 0b1100;
+		const PRIVILEGE_SUPERADMIN  = 0b1110;
 		
 		private $recordId;
 		private $userId;
