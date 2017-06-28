@@ -29,8 +29,6 @@ class ZKLib {
 	const LEVEL_ADMIN = 14;
 	const DEVICE_GENERAL_INFO_STRING_LENGTH = 184;
 
-	const TIME_OFFSSET = 936572400;
-
 	/**
 	 * @var $socket
 	 */
@@ -303,7 +301,8 @@ class ZKLib {
 	public function getTime()
 	{
 		$data = $this->execute(self::CMD_GET_TIME);
-		return \DateTime::createFromFormat('U', current(unpack('V', $data)) + self::TIME_OFFSSET);
+		$encodedTime = current(unpack('V', $data));
+		return $this->decodeTime($encodedTime);
 	}
 
 	private function reverseHex($hexstr) {
@@ -319,7 +318,7 @@ class ZKLib {
 
 	public function setTime(\DateTime $dateTime)
 	{
-		return $this->execute(self::CMD_SET_TIME,  pack('I', $dateTime->getTimestamp() - self::TIME_OFFSSET));
+		return $this->execute(self::CMD_SET_TIME,  pack('V', $this->encodeTime($dateTime)));
 	}
 
 	public function clearAttendance(){
@@ -524,7 +523,8 @@ class ZKLib {
 	 */
 	public function encodeTime(\DateTime $t)
 	{
-	return ( ($t->format('Y') % 100) * 12 * 31 + (($t->format('n') - 1) * 31) + $t->format('j') - 1) *
-		(24 * 60 * 60) + ($t->format('G') * 60 + $t->format('i')) * 60 + $t->format('s');
+		return
+			(($t->format('Y') % 100) * 12 * 31 + (($t->format('n') - 1) * 31) + $t->format('j') - 1) * (24 * 60 * 60) +
+			($t->format('G') * 60 + $t->format('i')) * 60 + $t->format('s');
 	}
 }
