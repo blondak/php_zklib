@@ -1,4 +1,6 @@
 <?php
+use \ZKLib\User;
+use \ZKLib\Attendance;
 
 class ZKLib {
 	const USHRT_MAX = 65535;
@@ -316,7 +318,7 @@ class ZKLib {
 				}
 				$data = unpack('vuserId/vtype/Vtime/cstatus/cjnkb/vjnkc/Vworkcode', $attInfo);
 				$dateTime = $this->decodeTime($data['time']);
-				$result[] = \ZKLib\Attendance::construct(
+				$result[] = Attendance::construct(
 					$data['workcode'],
 					$data['userId'],
 					$dateTime,
@@ -397,7 +399,7 @@ class ZKLib {
 					continue;
 				}
 				$user = unpack('vrecordId/Crole/a5password/a8name/a5cardNo/CgroupId/stimeZone/VuserId', $userInfo);
-				$result[$user['recordId']] = \ZKLib\User::construct(
+				$result[$user['recordId']] = User::construct(
 					$user['recordId'],
 					$user['role'],
 					$user['password'],
