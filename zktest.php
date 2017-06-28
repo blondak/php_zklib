@@ -2,19 +2,19 @@
     <head>
         <title>ZK Test</title>
     </head>
-    
+
     <body>
 <?php
     include("ZKLib.php");
     include("ZKLib/User.php");
-    
+
     $zk = new ZKLib("192.168.1.201", 4370);
-    
+
     $ret = $zk->connect();
     if ( $ret ): 
         $zk->disable();
     ?>
-        
+
         <table border="1" cellpadding="5" cellspacing="2">
             <tr>
                 <td><b>Status</b></td>
@@ -85,7 +85,7 @@
                 endforeach;
             } catch (Exception $e) {
                 header("HTTP/1.0 404 Not Found");
-                header('HTTP', true, 500); // 500 internal server error                
+                header('HTTP', true, 500); // 500 internal server error
             }
             //$zk->clearAdmins();
             ?>
@@ -99,6 +99,7 @@
                 <th>Index</th>
                 <th>UID</th>
                 <th>Type</th>
+                <th>Status</th>
                 <th>DateTime</th>
             </tr>
             <?php
@@ -108,6 +109,7 @@
                 <td><?php echo $attendance->getRecordId(); ?></td>
                 <td><?php echo $attendance->getUserId(); ?></td>
                 <td><?php echo $attendance->getType(); ?></td>
+                <td><?php echo $attendance->getStatus(); ?></td>
                 <td><?php echo $attendance->getDateTime()->format('r'); ?></td>
             </tr>
             <?php

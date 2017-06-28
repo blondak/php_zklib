@@ -2,7 +2,7 @@
 
 PHP library for communication with ZKTeco Attendance Machine
 
-Adjsutemnts for model ZEM500
+Adjustemnts for model ZEM500
 
 ### Donations
 ```
