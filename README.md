@@ -1,9 +1,12 @@
 # PHP ZKLib
 
-Attendance Machine Library for PHP with a connection to the network using the UDP protocol and port 4370
+PHP library for communication with ZKTeco Attendance Machine
 
-## Donate bitcoin
+Adjsutemnts for model ZEM500
 
-![Donate](https://blockr.io/api/v1/address/Qr/1BTsPJFMwSiiQnTusDXUF9YA8Hrm1NLQTD)
-
-1BTsPJFMwSiiQnTusDXUF9YA8Hrm1NLQTD
+## Donate
+`
+Bitcoin : 187w4iNVHX44y2PC96AuhP286aUKNjcrXV
+Litecoin: LVutsPn9jaoC6SScdxsGMM2uAMvPbjNZXq
+PIVX    : D81ZZt8jAvWQFaLhtx3f4ntstUCCYBcdne
+`
