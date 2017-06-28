@@ -58,11 +58,6 @@ class ZKLib {
 	/** @var integer */
 	private $reply_id;
 
-	/**
-	 * @var null
-	 */
-	private $result = null;
-
 	public function __construct($ip = '', $port = 4370)
 	{
 		$this->port = $port;
@@ -120,24 +115,6 @@ class ZKLib {
 	public function setTimeout($timeout)
 	{
 		$this->timeout = $timeout;
-		return $this;
-	}
-
-	/**
-	 * @return null
-	 */
-	public function getResult()
-	{
-		return $this->result;
-	}
-
-	/**
-	 * @param null $result
-	 * @return ZkSocket
-	 */
-	public function setResult($result)
-	{
-		$this->result = $result;
 		return $this;
 	}
 
@@ -378,13 +355,14 @@ class ZKLib {
 	 * @param \ZKLib\User $user
 	 */
 	public function setUser($user){
-		return $this->execute(self::CMD_SET_USER, pack('vCa8a24VCx8a9x15',
+		return $this->execute(self::CMD_SET_USER, pack('vCa5a8a5CsV',
 			$user->getRecordId(),
 			$user->getRole(),
 			$user->getPassword(),
 			$this->func_removeAccents($user->getName()),
 			$user->getCardNo(),
-			1,
+			$user->getGroupId(),
+			$user->getTimeZone(),
 			$user->getUserId()
 		));
 	}
@@ -418,7 +396,7 @@ class ZKLib {
 				if (strlen($userInfo) < 28) {
 					continue;
 				}
-				$user = unpack('vrecordId/Crole/a5password/a8name/VcardNo/VgroupId/VuserId', $userInfo);
+				$user = unpack('vrecordId/Crole/a5password/a8name/a5cardNo/CgroupId/stimeZone/VuserId', $userInfo);
 				$result[$user['recordId']] = \ZKLib\User::construct(
 					$user['recordId'],
 					$user['role'],
@@ -426,6 +404,7 @@ class ZKLib {
 					$user['name'],
 					$user['cardNo'],
 					$user['groupId'],
+					$user['timeZone'],
 					$user['userId']
 				);
 			}

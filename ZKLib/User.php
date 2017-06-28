@@ -14,6 +14,7 @@
 		private $password;
 		private $role;
 		private $cardNo;
+		private $timeZone;
 
 		public function getRecordId(){
 			return $this->recordId;
@@ -43,7 +44,11 @@
 			return $this->groupId;
 		}
 
-		public static function construct($recordId, $role, $password, $name, $cardNo, $groupId, $userId) {
+		public function getTimeZone(){
+			return $this->timeZone;
+		}
+
+		public static function construct($recordId, $role, $password, $name, $cardNo, $groupId, $timeZone, $userId) {
 
 			$instance = new self();
 			$instance->recordId = $recordId;
@@ -52,6 +57,7 @@
 			$instance->name = $name;
 			$instance->cardNo = $cardNo;
 			$instance->groupId = $groupId;
+			$instance->timeZone = $timeZone;
 			$instance->userId = $userId;
 
 			return $instance;
