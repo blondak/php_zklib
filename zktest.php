@@ -1,9 +1,11 @@
 <html>
     <head>
         <title>ZK Test</title>
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
     </head>
 
     <body>
+    <div class="container">
 <?php
     include("ZKLib.php");
     include("ZKLib/User.php");
@@ -11,11 +13,12 @@
     $zk = new ZKLib("192.168.1.201", 4370);
 
     $ret = $zk->connect();
-    if ( $ret ): 
+    if ( $ret ):
         $zk->disable();
     ?>
+        <h1>PHP ZK Library</h1>
 
-        <table border="1" cellpadding="5" cellspacing="2">
+        <table class="table table-bordered table-hover">
             <tr>
                 <td><b>Status</b></td>
                 <td>Connected</td>
@@ -48,7 +51,9 @@
             </tr>
         </table>
         <hr />
-        <table border="1" cellpadding="5" cellspacing="2" style="float: left; margin-right: 10px;">
+        <div class="row">
+        <div class="col col-md-6">
+        <table class="table table-bordered table-hover">
             <tr>
                 <th colspan="5">Data User</th>
             </tr>
@@ -90,8 +95,10 @@
             //$zk->clearAdmins();
             ?>
         </table>
-        
-        <table border="1" cellpadding="5" cellspacing="2">
+        </div>
+
+        <div class="col col-md-6">
+        <table class="table table-bordered table-hover">
             <tr>
                 <th colspan="6">Data Attendance</th>
             </tr>
@@ -116,11 +123,13 @@
                 endforeach;
             ?>
         </table>
-        
+        </div>
+
     <?php
         $zk->enable();
         $zk->disconnect();
     endif
 ?>
+    </div>
     </body>
 </html>
