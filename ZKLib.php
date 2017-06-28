@@ -305,17 +305,6 @@ class ZKLib {
 		return $this->decodeTime($encodedTime);
 	}
 
-	private function reverseHex($hexstr) {
-		$tmp = '';
-
-		for ( $i=strlen($hexstr); $i>=0; $i-- ) {
-			$tmp .= substr($hexstr, $i, 2);
-			$i--;
-		}
-
-		return $tmp;
-	}
-
 	public function setTime(\DateTime $dateTime)
 	{
 		return $this->execute(self::CMD_SET_TIME,  pack('V', $this->encodeTime($dateTime)));
