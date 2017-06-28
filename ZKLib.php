@@ -8,6 +8,7 @@ class ZKLib {
 	const CMD_EXIT = 1001;
 	const CMD_ENABLEDEVICE = 1002;
 	const CMD_DISABLEDEVICE = 1003;
+	const CMD_TESTVOICE = 1017;
 	const CMD_ACK_OK = 2000;
 	const CMD_ACK_ERROR = 2001;
 	const CMD_ACK_DATA = 2002;
@@ -211,6 +212,11 @@ class ZKLib {
 	public function enable()
 	{
 		return $this->execute(self::CMD_ENABLEDEVICE);
+	}
+
+	public function testVoice()
+	{
+		return $this->execute(self::CMD_TESTVOICE);
 	}
 
 	public function disable()
