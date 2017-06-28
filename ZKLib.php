@@ -1,6 +1,7 @@
 <?php
 use \ZKLib\User;
 use \ZKLib\Attendance;
+use \ZKLib\Capacity;
 
 class ZKLib {
 	const USHRT_MAX = 65535;
@@ -60,6 +61,9 @@ class ZKLib {
 
 	/** @var integer */
 	private $reply_id;
+
+	private $response_code;
+	private $checksum;
 
 	public function __construct($ip = '', $port = 4370)
 	{
@@ -174,8 +178,6 @@ class ZKLib {
 		}
 	}
 
-	private $response_code;
-	private $checksum;
 	private function unpackResponse(){
 		foreach ($r = unpack('vresponse_code/vchecksum/vsession_id/vreply_id', $this->data) as $key => $value){
 			$this->{$key} = $value;
@@ -429,7 +431,7 @@ class ZKLib {
 			if (!defined('__ZKLib_Capacity')){
 				require_once __DIR__.'/ZKLib/Capacity.php';
 			}
-			return \ZKLib\Capacity::construct(unpack('x16/Vusers_stored/x4/Vtemplates_stored/x4/Vatt_logs_stored/x12/Vadmins_stored/Vpasswords_stored/Vtemplates_capacity/Vusers_capacity/Vatt_logs_capacity/Vtemplates_available/Vusers_available/Vatt_logs_available', $free_sizes_info));
+			return Capacity::construct(unpack('x16/Vusers_stored/x4/Vtemplates_stored/x4/Vatt_logs_stored/x12/Vadmins_stored/Vpasswords_stored/Vtemplates_capacity/Vusers_capacity/Vatt_logs_capacity/Vtemplates_available/Vusers_available/Vatt_logs_available', $free_sizes_info));
 		}
 		return false;
 	}
