@@ -7,6 +7,8 @@
 	<body>
 	<div class="container">
 <?php
+	use \ZKLib\User;
+
 	include("ZKLib.php");
 	include("ZKLib/User.php");
 
@@ -63,19 +65,21 @@
 				<th>Name</th>
 				<th>Role</th>
 				<th>Password</th>
-		<th>Card number</th>
+				<th>Group</th>
+				<th>TimeZone</th>
+				<th>Card number</th>
 			</tr>
 			<?php
 			try {
-				//$zk->clearUsers();
-		//$zk->setUser(\ZKLib\User::construct(1, \ZKLib\User::PRIVILEGE_SUPERADMIN, '1', 'Admin', '', ''));
+		// $zk->clearUsers();
+		// $zk->setUser(User::construct(1, User::PRIVILEGE_SUPERADMIN, '1', 'Admin', '', '', -3, 1));
 		foreach($zk->getUser() as $user):
 			$role = 'Unknown';
 			switch ($user->getRole()){
-			case \ZKLib\User::PRIVILEGE_COMMON_USER : $role = 'USER'; break;
-			case \ZKLib\User::PRIVILEGE_ENROLLER    : $role = 'ENROLLER'; break;
-			case \ZKLib\User::PRIVILEGE_MANAGER     : $role = 'MANAGER'; break;
-			case \ZKLib\User::PRIVILEGE_SUPERADMIN  : $role = 'ADMIN'; break;
+			case User::PRIVILEGE_COMMON_USER : $role = 'USER'; break;
+			case User::PRIVILEGE_ENROLLER    : $role = 'ENROLLER'; break;
+			case User::PRIVILEGE_MANAGER     : $role = 'MANAGER'; break;
+			case User::PRIVILEGE_SUPERADMIN  : $role = 'ADMIN'; break;
 			}
 				?>
 				<tr>
@@ -84,6 +88,8 @@
 					<td><?php echo $user->getName(); ?></td>
 					<td><?php echo $role; ?></td>
 					<td><?php echo $user->getPassword(); ?></td>
+					<td><?php echo $user->getGroupId(); ?></td>
+					<td><?php echo $user->getTimeZone(); ?></td>
 					<td><?php echo $user->getCardNo(); ?></td>
 				</tr>
 				<?php
@@ -92,7 +98,7 @@
 				header("HTTP/1.0 404 Not Found");
 				header('HTTP', true, 500); // 500 internal server error
 			}
-			//$zk->clearAdmins();
+			// $zk->clearAdmins();
 			?>
 		</table>
 		</div>
