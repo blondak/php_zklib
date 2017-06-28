@@ -179,16 +179,11 @@ class ZKLib {
 
 	public function connect()
 	{
-		try {
-			$this->socket = socket_create(AF_INET, SOCK_DGRAM, SOL_UDP);
-			socket_set_option($this->socket, SOL_SOCKET, SO_RCVTIMEO, $this->timeout);
+		$this->socket = socket_create(AF_INET, SOCK_DGRAM, SOL_UDP);
+		socket_set_option($this->socket, SOL_SOCKET, SO_RCVTIMEO, $this->timeout);
 
-			$this->reply_id = (-1 + self::USHRT_MAX);
-			return $this->execute(self::CMD_CONNECT, null, [self::CMD_ACK_UNAUTH]);
-
-		} catch (\Exception $ex) {
-			return false;
-		}
+		$this->reply_id = (-1 + self::USHRT_MAX);
+		return $this->execute(self::CMD_CONNECT, null, [self::CMD_ACK_UNAUTH]);
 	}
 
 	public function disconnect()
@@ -209,30 +204,24 @@ class ZKLib {
 
 	private function execute($command, $command_string = null, $extraResponses = array())
 	{
-		try {
-			$buf = $this->createHeader($command, $command_string);
+		$buf = $this->createHeader($command, $command_string);
 
-			socket_sendto($this->socket, $buf, strlen($buf), 0, $this->ip, $this->port);
-			@socket_recvfrom($this->socket, $this->data, 1024, 0, $this->ip, $this->port);
+		socket_sendto($this->socket, $buf, strlen($buf), 0, $this->ip, $this->port);
+		@socket_recvfrom($this->socket, $this->data, 1024, 0, $this->ip, $this->port);
 
-			if ( strlen( $this->data ) > 0 ) {
-				$this->unpackResponse();
+		if ( strlen( $this->data ) > 0 ) {
+			$this->unpackResponse();
 
-				if ($this->checkValid($this->data, $extraResponses) ) {
-					if (strlen($this->data) > 8){
-						if ($command_string){
-							return preg_replace('/^'.preg_quote($command_string, '/').'=/', '', substr( $this->data, 8 ));
-						}
-						return substr( $this->data, 8 );
+			if ($this->checkValid($this->data, $extraResponses) ) {
+				if (strlen($this->data) > 8){
+					if ($command_string){
+						return preg_replace('/^'.preg_quote($command_string, '/').'=/', '', substr( $this->data, 8 ));
 					}
-					return true;
+					return substr( $this->data, 8 );
 				}
+				return true;
 			}
-		} catch (\Exception $ex) {
-			var_dump($ex->getMessage());
 		}
-
-		return false;
 	}
 
 	public function getDeviceName()
@@ -311,27 +300,15 @@ class ZKLib {
 	}
 
 	public function clearAttendance(){
-		try {
-			return $this->execute(self::CMD_CLEAR_ATTLOG);
-		} catch (\Exception $ex) {
-			error_log($ex->getMessage());
-		}
+		return $this->execute(self::CMD_CLEAR_ATTLOG);
 	}
 
 	public function clearUsers(){
-		try {
-			return $this->execute(self::CMD_CLEAR_DATA);
-		} catch (\Exception $ex) {
-			error_log($ex->getMessage());
-		}
+		return $this->execute(self::CMD_CLEAR_DATA);
 	}
 
 	public function clearAdmins(){
-		try {
-			return $this->execute(self::CMD_CLEAR_ADMIN);
-		} catch (\Exception $ex) {
-			error_log($ex->getMessage());
-		}
+		return $this->execute(self::CMD_CLEAR_ADMIN);
 	}
 
 	/**
@@ -346,36 +323,32 @@ class ZKLib {
 		if (!defined('__ZKLib_Attendance')){
 			require_once __DIR__.'/ZKLib/Attendance.php';
 		}
-		try {
-			$this->execute(self::CMD_ATTLOG_RRQ);
 
-			$attData = '';
-			if($size = $this->getPrepareDataSize()) {
-				@socket_recvfrom($this->socket, $attData, $size, MSG_WAITALL, $this->ip, $this->port);
-			}
-			@socket_recvfrom($this->socket, $data, 1024, 0, $this->ip, $this->port);
-			$result = array();
-			if ($attData){
-				foreach (str_split(substr($attData, 12), 16) as $attInfo){
-					if (strlen($attInfo) < 16) {
-						continue;
-					}
-					$data = unpack('vuserId/vtype/Vtime/cstatus/cjnkb/vjnkc/Vworkcode', $attInfo);
-					$dateTime = $this->decodeTime($data['time']);
-					$result[] = \ZKLib\Attendance::construct(
-						$data['workcode'],
-						$data['userId'],
-						$dateTime,
-						$data['type'],
-						$data['status']
-					);
-				}
-			}
-			return $result;
+		$this->execute(self::CMD_ATTLOG_RRQ);
 
-		} catch (\Exception $ex) {
-			error_log($ex->getMessage());
+		$attData = '';
+		if($size = $this->getPrepareDataSize()) {
+			@socket_recvfrom($this->socket, $attData, $size, MSG_WAITALL, $this->ip, $this->port);
 		}
+		@socket_recvfrom($this->socket, $data, 1024, 0, $this->ip, $this->port);
+		$result = array();
+		if ($attData){
+			foreach (str_split(substr($attData, 12), 16) as $attInfo){
+				if (strlen($attInfo) < 16) {
+					continue;
+				}
+				$data = unpack('vuserId/vtype/Vtime/cstatus/cjnkb/vjnkc/Vworkcode', $attInfo);
+				$dateTime = $this->decodeTime($data['time']);
+				$result[] = \ZKLib\Attendance::construct(
+					$data['workcode'],
+					$data['userId'],
+					$dateTime,
+					$data['type'],
+					$data['status']
+				);
+			}
+		}
+		return $result;
 	}
 
 	private function getPrepareDataSize()
@@ -427,41 +400,37 @@ class ZKLib {
 		if (!defined('__ZKLib_User')){
 			require_once __DIR__.'/ZKLib/User.php';
 		}
-		try {
-			$this->execute(self::CMD_USERTEMP_RRQ);
 
-			$usersData = '';
-			if($size = $this->getPrepareDataSize()) {
-				do {
-					$size -= @socket_recvfrom($this->socket, $data, $size, 0, $this->ip, $this->port);
-					$usersData .= substr($data, 8);
-				} while($size > 0);
-			}
-			@socket_recvfrom($this->socket, $data, 1024, 0, $this->ip, $this->port);
+		$this->execute(self::CMD_USERTEMP_RRQ);
 
-			$result = array();
-			if ($usersData){
-				foreach (str_split(substr($usersData, 4), 28) as $userInfo){
-					if (strlen($userInfo) < 28) {
-						continue;
-					}
-					$user = unpack('vrecordId/Crole/a5password/a8name/VcardNo/VgroupId/VuserId', $userInfo);
-					$result[$user['recordId']] = \ZKLib\User::construct(
-						$user['recordId'],
-						$user['role'],
-						$user['password'],
-						$user['name'],
-						$user['cardNo'],
-						$user['groupId'],
-						$user['userId']
-					);
-				}
-			}
-			return $result;
-		} catch (\Exception $ex) {
-			error_log($ex->getMessage());
+		$usersData = '';
+		if($size = $this->getPrepareDataSize()) {
+			do {
+				$size -= @socket_recvfrom($this->socket, $data, $size, 0, $this->ip, $this->port);
+				$usersData .= substr($data, 8);
+			} while($size > 0);
 		}
+		@socket_recvfrom($this->socket, $data, 1024, 0, $this->ip, $this->port);
 
+		$result = array();
+		if ($usersData){
+			foreach (str_split(substr($usersData, 4), 28) as $userInfo){
+				if (strlen($userInfo) < 28) {
+					continue;
+				}
+				$user = unpack('vrecordId/Crole/a5password/a8name/VcardNo/VgroupId/VuserId', $userInfo);
+				$result[$user['recordId']] = \ZKLib\User::construct(
+					$user['recordId'],
+					$user['role'],
+					$user['password'],
+					$user['name'],
+					$user['cardNo'],
+					$user['groupId'],
+					$user['userId']
+				);
+			}
+		}
+		return $result;
 	}
 
 	/**
