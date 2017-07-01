@@ -51,7 +51,7 @@ class ZKLib {
 	/**
 	 * @var array
 	 */
-	private $timeout = array('sec'=>60,'usec'=>500000);
+	private $timeout = array('sec'=>30,'usec'=>500000);
 
 	/** @var  string */
 	private $data;
@@ -314,10 +314,11 @@ class ZKLib {
 		$this->execute(self::CMD_ATTLOG_RRQ);
 
 		$attData = '';
-		if($size = $this->getPrepareDataSize()) {
-			@socket_recvfrom($this->socket, $attData, $size, MSG_WAITALL, $this->ip, $this->port);
-		}
-		@socket_recvfrom($this->socket, $data, 1024, 0, $this->ip, $this->port);
+		do {
+			$size = @socket_recvfrom($this->socket, $data, 1032, MSG_WAITALL, $this->ip, $this->port);
+			$attData .= $data;
+		} while ($size > 0 && $size != 8);
+
 		$result = array();
 		if ($attData){
 			foreach (str_split(substr($attData, 12), 16) as $attInfo){
@@ -335,6 +336,7 @@ class ZKLib {
 				);
 			}
 		}
+
 		return $result;
 	}
 
@@ -392,17 +394,14 @@ class ZKLib {
 		$this->execute(self::CMD_USERTEMP_RRQ);
 
 		$usersData = '';
-		if($size = $this->getPrepareDataSize()) {
-			do {
-				$size -= @socket_recvfrom($this->socket, $data, $size, 0, $this->ip, $this->port);
-				$usersData .= substr($data, 8);
-			} while($size > 0);
-		}
-		@socket_recvfrom($this->socket, $data, 1024, 0, $this->ip, $this->port);
+		do {
+			$size = @socket_recvfrom($this->socket, $data, 1032, 0, $this->ip, $this->port);
+			$usersData .= $data;
+		} while($size > 0 && $size != 8);
 
 		$result = array();
 		if ($usersData){
-			foreach (str_split(substr($usersData, 4), 28) as $userInfo){
+			foreach (str_split(substr($usersData, 12), 28) as $userInfo){
 				if (strlen($userInfo) < 28) {
 					continue;
 				}
