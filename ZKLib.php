@@ -24,11 +24,12 @@ class ZKLib {
 	const CMD_CLEAR_ATTLOG = 15;
 	const CMD_DEL_USER = 18;
 	const CMD_CLEAR_ADMIN = 20;
-	const CMD_WRITE_LCD = 66;
 	const CMD_GET_TIME = 201;
 	const CMD_SET_TIME = 202;
 	const CMD_VERSION = 1100;
 	const CMD_GET_FREE_SIZES = 50;
+	const CMD_WRITE_LCD = 66;
+	const CMD_CLEAR_LCD = 67;
 	const LEVEL_USER = 0;
 	const LEVEL_ADMIN = 14;
 	const DEVICE_GENERAL_INFO_STRING_LENGTH = 184;
@@ -318,17 +319,18 @@ class ZKLib {
 			$size = @socket_recvfrom($this->socket, $data, 1032, MSG_WAITALL, $this->ip, $this->port);
 			$attData .= $data;
 		} while ($size > 0 && $size != 8);
+		$attData = substr($attData, 12);
+		$attData = substr($attData, 0, -8);
 
 		$result = array();
 		if ($attData){
-			foreach (str_split(substr($attData, 12), 16) as $attInfo){
-				if (strlen($attInfo) < 16) {
+			foreach (str_split($attData, 8) as $attInfo){
+				if (strlen($attInfo) < 8) {
 					continue;
 				}
-				$data = unpack('vuserId/vtype/Vtime/cstatus/cjnkb/vjnkc/Vworkcode', $attInfo);
+				$data = unpack('vuserId/Ctype/Cstatus/Vtime', $attInfo);
 				$dateTime = $this->decodeTime($data['time']);
 				$result[] = Attendance::construct(
-					$data['workcode'],
 					$data['userId'],
 					$dateTime,
 					$data['type'],
@@ -398,10 +400,12 @@ class ZKLib {
 			$size = @socket_recvfrom($this->socket, $data, 1032, 0, $this->ip, $this->port);
 			$usersData .= $data;
 		} while($size > 0 && $size != 8);
+		$usersData = substr($usersData, 12);
+		$usersData = substr($usersData, 0, -8);
 
 		$result = array();
 		if ($usersData){
-			foreach (str_split(substr($usersData, 12), 28) as $userInfo){
+			foreach (str_split($usersData, 28) as $userInfo){
 				if (strlen($userInfo) < 28) {
 					continue;
 				}
