@@ -190,7 +190,10 @@ class ZKLib {
 		$buf = $this->createHeader($command, $command_string);
 
 		socket_sendto($this->socket, $buf, strlen($buf), 0, $this->ip, $this->port);
-		@socket_recvfrom($this->socket, $this->data, 1024, 0, $this->ip, $this->port);
+		$bytes = socket_recvfrom($this->socket, $this->data, 1024, 0, $this->ip, $this->port);
+		if ($bytes === false) {
+			throw new RuntimeException(socket_strerror(socket_last_error()));
+		}
 
 		if ( strlen( $this->data ) > 0 ) {
 			$this->unpackResponse();
@@ -316,7 +319,10 @@ class ZKLib {
 
 		$attData = '';
 		do {
-			$size = @socket_recvfrom($this->socket, $data, 1032, MSG_WAITALL, $this->ip, $this->port);
+			$size = socket_recvfrom($this->socket, $data, 1032, MSG_WAITALL, $this->ip, $this->port);
+			if ($size === false) {
+				throw new RuntimeException(socket_strerror(socket_last_error()));
+			}
 			$attData .= $data;
 		} while ($size > 0 && $size != 8);
 		$attData = substr($attData, 12);
@@ -397,7 +403,10 @@ class ZKLib {
 
 		$usersData = '';
 		do {
-			$size = @socket_recvfrom($this->socket, $data, 1032, 0, $this->ip, $this->port);
+			$size = socket_recvfrom($this->socket, $data, 1032, 0, $this->ip, $this->port);
+			if ($size === false) {
+				throw new RuntimeException(socket_strerror(socket_last_error()));
+			}
 			$usersData .= $data;
 		} while($size > 0 && $size != 8);
 		$usersData = substr($usersData, 12);
