@@ -6,7 +6,9 @@ if (!defined('__ZKLib_Attendance')){
 	define('__ZKLib_Attendance', true);
 
 	class Attendance {
-		private $recordId;
+		const ATTENDANCE_BY_PASSWORD = 'by_password';
+		const ATTENDANCE_BY_FINGERPRINT = 'by_fingerprint';
+
 		private $userId;
 		private $type;
 		private $status;
@@ -14,10 +16,6 @@ if (!defined('__ZKLib_Attendance')){
 
 		public function getType(){
 			return $this->type;
-		}
-
-		public function getRecordId(){
-			return $this->recordId;
 		}
 
 		public function getUserId(){
@@ -28,6 +26,14 @@ if (!defined('__ZKLib_Attendance')){
 			return $this->status;
 		}
 
+		public function isOut(){
+			return ($this->type & 0x20) > 0;
+		}
+
+		public function validatedBy(){
+			return ($this->type & 0x08) ? static::ATTENDANCE_BY_FINGERPRINT : static::ATTENDANCE_BY_PASSWORD;
+		}
+
 		/**
 		 * @return \DateTime
 		 */
@@ -35,9 +41,8 @@ if (!defined('__ZKLib_Attendance')){
 			return $this->time;
 		}
 
-		public static function construct($recordId, $userId, \DateTime $dateTime, $type, $status){
+		public static function construct($userId, \DateTime $dateTime, $type, $status){
 			$instance = new self();
-			$instance->recordId = $recordId;
 			$instance->userId = $userId;
 			$instance->type = $type;
 			$instance->time = $dateTime;
