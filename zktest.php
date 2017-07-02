@@ -19,7 +19,7 @@
 		$zk->disable();
 	?>
 		<h1>PHP ZK Library</h1>
-
+		<div class="row">
 		<table class="table table-bordered table-hover">
 			<tr>
 				<td><b>Status</b></td>
@@ -52,7 +52,7 @@
 				<td><?php echo $zk->getTime()->format('r') ?></td>
 			</tr>
 		</table>
-		<hr />
+		</div>
 		<div class="row">
 		<div class="col col-md-6">
 		<table class="table table-bordered table-hover">
@@ -109,9 +109,9 @@
 				<th colspan="6">Data Attendance</th>
 			</tr>
 			<tr>
-				<th>Index</th>
 				<th>UID</th>
-				<th>Type</th>
+				<th>In / Out</th>
+				<th>Validated By</th>
 				<th>Status</th>
 				<th>DateTime</th>
 			</tr>
@@ -119,9 +119,9 @@
 		foreach($zk->getAttendance() as $attendance):
 		?>
 			<tr>
-				<td><?php echo $attendance->getRecordId(); ?></td>
 				<td><?php echo $attendance->getUserId(); ?></td>
-				<td><?php echo $attendance->getType(); ?></td>
+				<td><?php echo $attendance->isOut() ? 'Out' : 'In'; ?></td>
+				<td><?php echo $attendance->validatedBy(); ?></td>
 				<td><?php echo $attendance->getStatus(); ?></td>
 				<td><?php echo $attendance->getDateTime()->format('r'); ?></td>
 			</tr>
