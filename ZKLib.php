@@ -22,7 +22,7 @@ class ZKLib {
 	const CMD_ATTLOG_RRQ = 13;
 	const CMD_CLEAR_DATA = 14;
 	const CMD_CLEAR_ATTLOG = 15;
-	const CMD_DEL_USER = 18;
+	const CMD_DELETE_USER = 18;
 	const CMD_CLEAR_ADMIN = 20;
 	const CMD_GET_TIME = 201;
 	const CMD_SET_TIME = 202;
@@ -370,6 +370,12 @@ class ZKLib {
 		return strtr($s, "\x01\x02\x03\x04\x05", '`\'"^~');
 	}
 
+	/**
+	 * @param integer $userRecordId
+	 */
+	public function deleteUser($userRecordId){
+		return $this->execute(self::CMD_DELETE_USER, pack('v', $userRecordId));
+	}
 
 	/**
 	 * @param \ZKLib\User $user
