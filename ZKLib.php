@@ -287,7 +287,7 @@ class ZKLib {
 
 	public function setTime(\DateTime $dateTime)
 	{
-		return $this->execute(self::CMD_SET_TIME,  pack('V', $this->encodeTime($dateTime)));
+		return $this->execute(self::CMD_SET_TIME, pack('V', $this->encodeTime($dateTime)));
 	}
 
 	public function clearAttendance(){
@@ -300,6 +300,20 @@ class ZKLib {
 
 	public function clearAdmins(){
 		return $this->execute(self::CMD_CLEAR_ADMIN);
+	}
+
+	/**
+	 * writeLcd
+	 * @param integer $line Display line to write 0-3
+	 * @param string $message Message to display. Max len 16
+	 */
+	public function writeLcd($line, $message){
+		$message = utf8_decode(substr($message, 0, 16));
+		return $this->execute(self::CMD_WRITE_LCD, pack('vCa' . strlen($message), $line, 0x0, $message));
+	}
+
+	public function clearLcd(){
+		return $this->execute(self::CMD_CLEAR_LCD);
 	}
 
 	/**
