@@ -5,8 +5,7 @@
     "homepage": "http://github.com/wnasich/php_zklib",
     "type": "library",
     "license": "MIT",
-    "minimum-stability": "dev",
     "require": {
-        "php": "^5.3.3"
+        "php": ">=5.3.3"
     }
 }
