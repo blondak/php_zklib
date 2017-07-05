@@ -16,7 +16,7 @@ class ZKLib {
 	const CMD_ACK_UNAUTH = 2005;
 	const CMD_PREPARE_DATA = 1500;
 	const CMD_DATA = 1501;
-	const CMD_SET_USER = 8;
+	const CMD_USER_WRQ = 8;
 	const CMD_USERTEMP_RRQ = 9;
 	const CMD_DEVICE = 11;
 	const CMD_ATTLOG_RRQ = 13;
@@ -400,7 +400,7 @@ class ZKLib {
 	 * @param \ZKLib\User $user
 	 */
 	public function setUser($user){
-		return $this->execute(self::CMD_SET_USER, pack('vCa5a8a5CsV',
+		return $this->execute(self::CMD_USER_WRQ, pack('vCa5a8a5CsV',
 			$user->getRecordId(),
 			$user->getRole(),
 			$user->getPassword(),
