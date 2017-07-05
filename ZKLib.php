@@ -28,6 +28,7 @@ class ZKLib {
 	const CMD_SET_TIME = 202;
 	const CMD_VERSION = 1100;
 	const CMD_GET_FREE_SIZES = 50;
+	const CMD_ENABLE_CLOCK = 57;
 	const CMD_WRITE_LCD = 66;
 	const CMD_CLEAR_LCD = 67;
 	const LEVEL_USER = 0;
@@ -314,6 +315,10 @@ class ZKLib {
 
 	public function clearLcd(){
 		return $this->execute(self::CMD_CLEAR_LCD);
+	}
+
+	public function enableClock($flashSeconds){
+		return $this->execute(self::CMD_ENABLE_CLOCK, pack('C', $flashSeconds ? 0x01 : 0x00));
 	}
 
 	/**
