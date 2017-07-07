@@ -1,7 +1,7 @@
 <?php
-use \ZKLib\User;
-use \ZKLib\Attendance;
-use \ZKLib\Capacity;
+namespace ZKLib;
+
+use \DateTime;
 
 class ZKLib {
 	const USHRT_MAX = 65535;
@@ -69,8 +69,8 @@ class ZKLib {
 
 	public function __construct($ip = '', $port = 4370)
 	{
-		$this->port = $port;
 		$this->ip = $ip;
+		$this->port = $port;
 	}
 
 	/**
@@ -286,7 +286,7 @@ class ZKLib {
 		return $this->decodeTime($encodedTime);
 	}
 
-	public function setTime(\DateTime $dateTime)
+	public function setTime(DateTime $dateTime)
 	{
 		return $this->execute(self::CMD_SET_TIME, pack('V', $this->encodeTime($dateTime)));
 	}
@@ -309,6 +309,7 @@ class ZKLib {
 	 * @param string $message Message to display. Max len 16
 	 */
 	public function writeLcd($line, $message){
+		$message = str_pad($message, 16);
 		$message = utf8_decode(substr($message, 0, 16));
 		return $this->execute(self::CMD_WRITE_LCD, pack('vCa' . strlen($message), $line, 0x0, $message));
 	}
@@ -329,9 +330,6 @@ class ZKLib {
 	{
 		if (($free = $this->getFreeSize()) && !$free->getAttLogsStored()){
 			return array();
-		}
-		if (!defined('__ZKLib_Attendance')){
-			require_once __DIR__.'/ZKLib/Attendance.php';
 		}
 
 		$this->execute(self::CMD_ATTLOG_RRQ);
@@ -355,7 +353,7 @@ class ZKLib {
 				}
 				$data = unpack('vuserId/Ctype/Cstatus/Vtime', $attInfo);
 				$dateTime = $this->decodeTime($data['time']);
-				$result[] = Attendance::construct(
+				$result[] = new Attendance(
 					$data['userId'],
 					$dateTime,
 					$data['type'],
@@ -399,7 +397,7 @@ class ZKLib {
 	/**
 	 * @param \ZKLib\User $user
 	 */
-	public function setUser($user){
+	public function setUser(User $user){
 		return $this->execute(self::CMD_USER_WRQ, pack('vCa5a8a5CsV',
 			$user->getRecordId(),
 			$user->getRole(),
@@ -418,10 +416,6 @@ class ZKLib {
 	public function getUser(){
 		if (($free = $this->getFreeSize()) && !$free->getUsersStored()){
 			return array();
-		}
-
-		if (!defined('__ZKLib_User')){
-			require_once __DIR__.'/ZKLib/User.php';
 		}
 
 		$this->execute(self::CMD_USERTEMP_RRQ);
@@ -444,7 +438,7 @@ class ZKLib {
 					continue;
 				}
 				$user = unpack('vrecordId/Crole/a5password/a8name/a5cardNo/CgroupId/stimeZone/VuserId', $userInfo);
-				$result[$user['recordId']] = User::construct(
+				$result[$user['recordId']] = new User(
 					$user['recordId'],
 					$user['role'],
 					$user['password'],
@@ -465,16 +459,13 @@ class ZKLib {
 	public function getFreeSize()
 	{
 		if (($free_sizes_info = $this->execute(self::CMD_GET_FREE_SIZES)) && is_string($free_sizes_info)) {
-			if (!defined('__ZKLib_Capacity')){
-				require_once __DIR__.'/ZKLib/Capacity.php';
-			}
-			return Capacity::construct(unpack('x16/Vusers_stored/x4/Vtemplates_stored/x4/Vatt_logs_stored/x12/Vadmins_stored/Vpasswords_stored/Vtemplates_capacity/Vusers_capacity/Vatt_logs_capacity/Vtemplates_available/Vusers_available/Vatt_logs_available', $free_sizes_info));
+			return new Capacity(unpack('x16/Vusers_stored/x4/Vtemplates_stored/x4/Vatt_logs_stored/x12/Vadmins_stored/Vpasswords_stored/Vtemplates_capacity/Vusers_capacity/Vatt_logs_capacity/Vtemplates_available/Vusers_available/Vatt_logs_available', $free_sizes_info));
 		}
 		return false;
 	}
 
 	/**
-	 * @return DateTime
+	 * @return \DateTime
 	 */
 	public function decodeTime($encodedTime)
 	{
@@ -505,7 +496,7 @@ class ZKLib {
 	/**
 	 * @return integer
 	 */
-	public function encodeTime(\DateTime $t)
+	public function encodeTime(DateTime $t)
 	{
 		return
 			(($t->format('Y') % 100) * 12 * 31 + (($t->format('n') - 1) * 31) + $t->format('j') - 1) * (24 * 60 * 60) +
