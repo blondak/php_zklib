@@ -2,6 +2,7 @@
 namespace ZKLib;
 
 use \DateTime;
+use \RuntimeException;
 
 class ZKLib {
 	const USHRT_MAX = 65535;
