@@ -24,6 +24,27 @@ class User {
 		return $this->role;
 	}
 
+	public function decodeRole(){
+		switch ($this->role) {
+			case PRIVILEGE_COMMON_USER:
+				$decoded = 'common_user';
+				break;
+			case PRIVILEGE_ENROLLER:
+				$decoded = 'enroller';
+				break;
+			case PRIVILEGE_MANAGER:
+				$decoded = 'manager';
+				break;
+			case PRIVILEGE_SUPERADMIN:
+				$decoded = 'superadmin';
+				break;
+			default:
+				$decoded = 'Unknown';
+				break;
+		}
+		return $decoded;
+	}
+
 	public function getPassword(){
 		return $this->password;
 	}

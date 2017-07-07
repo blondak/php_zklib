@@ -88,20 +88,12 @@ use \ZKLib\User;
 			try {
 		// $zk->clearUsers();
 		// $zk->setUser(new User(1, User::PRIVILEGE_SUPERADMIN, '1', 'Admin', '', '', -3, 1));
-		foreach($zk->getUsers() as $user):
-			$role = 'Unknown';
-			switch ($user->getRole()){
-			case User::PRIVILEGE_COMMON_USER : $role = 'USER'; break;
-			case User::PRIVILEGE_ENROLLER    : $role = 'ENROLLER'; break;
-			case User::PRIVILEGE_MANAGER     : $role = 'MANAGER'; break;
-			case User::PRIVILEGE_SUPERADMIN  : $role = 'ADMIN'; break;
-			}
-				?>
+		foreach($zk->getUsers() as $user): ?>
 				<tr>
 					<td><?php echo $user->getRecordId(); ?></td>
 					<td><?php echo $user->getUserId(); ?></td>
 					<td><?php echo $user->getName(); ?></td>
-					<td><?php echo $role; ?></td>
+					<td><?php echo $user->decodeRole(); ?></td>
 					<td><?php echo $user->getPassword(); ?></td>
 					<td><?php echo $user->getGroupId(); ?></td>
 					<td><?php echo $user->getTimeZone(); ?></td>
