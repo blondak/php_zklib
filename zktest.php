@@ -1,3 +1,9 @@
+<?php
+require __DIR__ . '/vendor/autoload.php';
+
+use \ZKLib\ZKLib;
+use \ZKLib\User;
+?>
 <html>
 	<head>
 		<title>ZK Test</title>
@@ -7,16 +13,25 @@
 	<body>
 	<div class="container">
 <?php
-	use \ZKLib\User;
-
-	include("ZKLib.php");
-	include("ZKLib/User.php");
-
-	$zk = new ZKLib("192.168.1.201", 4370);
+	$zk = new ZKLib('192.168.1.201');
 
 	$ret = $zk->connect();
 	if ( $ret ):
 		$zk->disable();
+
+	/*
+	$zk->testVoice();
+	$zk->setUser(new User(
+		99,
+		User::PRIVILEGE_COMMON_USER,
+		'1234',
+		'User99',
+		'Card99',
+		'1',
+		-3,
+		99
+	));
+	*/
 	?>
 		<h1>PHP ZK Library</h1>
 		<div class="row">
@@ -72,7 +87,7 @@
 			<?php
 			try {
 		// $zk->clearUsers();
-		// $zk->setUser(User::construct(1, User::PRIVILEGE_SUPERADMIN, '1', 'Admin', '', '', -3, 1));
+		// $zk->setUser(new User(1, User::PRIVILEGE_SUPERADMIN, '1', 'Admin', '', '', -3, 1));
 		foreach($zk->getUser() as $user):
 			$role = 'Unknown';
 			switch ($user->getRole()){
