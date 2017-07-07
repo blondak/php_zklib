@@ -1,53 +1,48 @@
 <?php
 namespace ZKLib;
 
-if (!defined('__ZKLib_Attendance')){
+use \DateTime;
 
-	define('__ZKLib_Attendance', true);
+class Attendance {
+	const ATTENDANCE_BY_PASSWORD = 'by_password';
+	const ATTENDANCE_BY_FINGERPRINT = 'by_fingerprint';
 
-	class Attendance {
-		const ATTENDANCE_BY_PASSWORD = 'by_password';
-		const ATTENDANCE_BY_FINGERPRINT = 'by_fingerprint';
+	private $userId;
+	private $type;
+	private $status;
+	private $time;
 
-		private $userId;
-		private $type;
-		private $status;
-		private $time;
+	public function getType(){
+		return $this->type;
+	}
 
-		public function getType(){
-			return $this->type;
-		}
+	public function getUserId(){
+		return $this->userId;
+	}
 
-		public function getUserId(){
-			return $this->userId;
-		}
+	public function getStatus(){
+		return $this->status;
+	}
 
-		public function getStatus(){
-			return $this->status;
-		}
+	public function isOut(){
+		return ($this->type & 0x20) > 0;
+	}
 
-		public function isOut(){
-			return ($this->type & 0x20) > 0;
-		}
+	public function validatedBy(){
+		return ($this->type & 0x08) ? static::ATTENDANCE_BY_FINGERPRINT : static::ATTENDANCE_BY_PASSWORD;
+	}
 
-		public function validatedBy(){
-			return ($this->type & 0x08) ? static::ATTENDANCE_BY_FINGERPRINT : static::ATTENDANCE_BY_PASSWORD;
-		}
+	/**
+	 * @return \DateTime
+	 */
+	public function getDateTime(){
+		return $this->time;
+	}
 
-		/**
-		 * @return \DateTime
-		 */
-		public function getDateTime(){
-			return $this->time;
-		}
-
-		public static function construct($userId, \DateTime $dateTime, $type, $status){
-			$instance = new self();
-			$instance->userId = $userId;
-			$instance->type = $type;
-			$instance->time = $dateTime;
-			$instance->status = $status;
-			return $instance;
-		}
+	public function __construct($userId, DateTime $dateTime, $type, $status){
+		$this->userId = $userId;
+		$this->time = $dateTime;
+		$this->type = $type;
+		$this->status = $status;
 	}
 }
