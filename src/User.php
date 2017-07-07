@@ -26,16 +26,16 @@ class User {
 
 	public function decodeRole(){
 		switch ($this->role) {
-			case PRIVILEGE_COMMON_USER:
+			case static::PRIVILEGE_COMMON_USER:
 				$decoded = 'common_user';
 				break;
-			case PRIVILEGE_ENROLLER:
+			case static::PRIVILEGE_ENROLLER:
 				$decoded = 'enroller';
 				break;
-			case PRIVILEGE_MANAGER:
+			case static::PRIVILEGE_MANAGER:
 				$decoded = 'manager';
 				break;
-			case PRIVILEGE_SUPERADMIN:
+			case static::PRIVILEGE_SUPERADMIN:
 				$decoded = 'superadmin';
 				break;
 			default:
