@@ -414,7 +414,7 @@ class ZKLib {
 	/**
 	 * @return \ZKLib\User[]
 	 */
-	public function getUser(){
+	public function getUsers(){
 		if (($free = $this->getFreeSize()) && !$free->getUsersStored()){
 			return array();
 		}

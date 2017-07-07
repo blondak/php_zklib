@@ -88,7 +88,7 @@ use \ZKLib\User;
 			try {
 		// $zk->clearUsers();
 		// $zk->setUser(new User(1, User::PRIVILEGE_SUPERADMIN, '1', 'Admin', '', '', -3, 1));
-		foreach($zk->getUser() as $user):
+		foreach($zk->getUsers() as $user):
 			$role = 'Unknown';
 			switch ($user->getRole()){
 			case User::PRIVILEGE_COMMON_USER : $role = 'USER'; break;
