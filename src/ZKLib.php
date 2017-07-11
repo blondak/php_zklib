@@ -292,7 +292,7 @@ class ZKLib {
 		return $this->execute(self::CMD_SET_TIME, pack('V', $this->encodeTime($dateTime)));
 	}
 
-	public function clearAttendance(){
+	public function clearAttendances(){
 		return $this->execute(self::CMD_CLEAR_ATTLOG);
 	}
 
@@ -327,7 +327,7 @@ class ZKLib {
 	 *
 	 * @return \ZKLib\Attendance[]
 	 */
-	public function getAttendance()
+	public function getAttendances()
 	{
 		if (($free = $this->getFreeSize()) && !$free->getAttLogsStored()){
 			return array();

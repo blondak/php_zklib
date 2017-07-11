@@ -123,7 +123,7 @@ use \ZKLib\User;
 				<th>DateTime</th>
 			</tr>
 			<?php
-		foreach($zk->getAttendance() as $attendance):
+		foreach($zk->getAttendances() as $attendance):
 		?>
 			<tr>
 				<td><?php echo $attendance->getUserId(); ?></td>
