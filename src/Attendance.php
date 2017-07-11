@@ -4,8 +4,8 @@ namespace ZKLib;
 use \DateTime;
 
 class Attendance {
-	const ATTENDANCE_BY_PASSWORD = 'by_password';
-	const ATTENDANCE_BY_FINGERPRINT = 'by_fingerprint';
+	const VALIDATED_BY_PASSWORD = 'password';
+	const VALIDATED_BY_FINGERPRINT = 'fingerprint';
 
 	private $userId;
 	private $type;
@@ -29,7 +29,7 @@ class Attendance {
 	}
 
 	public function validatedBy(){
-		return ($this->type & 0x08) ? static::ATTENDANCE_BY_FINGERPRINT : static::ATTENDANCE_BY_PASSWORD;
+		return ($this->type & 0x08) ? static::VALIDATED_BY_FINGERPRINT : static::VALIDATED_BY_PASSWORD;
 	}
 
 	/**
