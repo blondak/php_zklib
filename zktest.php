@@ -35,6 +35,7 @@ use \ZKLib\User;
 	?>
 		<h1>PHP ZK Library</h1>
 		<div class="row">
+		<div class="col col-md-12">
 		<table class="table table-bordered table-hover">
 			<tr>
 				<td><b>Status</b></td>
@@ -68,8 +69,9 @@ use \ZKLib\User;
 			</tr>
 		</table>
 		</div>
+		</div>
 		<div class="row">
-		<div class="col col-md-6">
+		<div class="col col-md-12">
 		<table class="table table-bordered table-hover">
 			<tr>
 				<th colspan="5">Data User</th>
@@ -109,8 +111,10 @@ use \ZKLib\User;
 			?>
 		</table>
 		</div>
+		</div>
 
-		<div class="col col-md-6">
+		<div class="row">
+		<div class="col col-md-12">
 		<table class="table table-bordered table-hover">
 			<tr>
 				<th colspan="6">Data Attendance</th>
