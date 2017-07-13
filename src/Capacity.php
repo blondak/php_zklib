@@ -50,7 +50,7 @@ class Capacity {
 		return $this->users_stored;
 	}
 
-	public function getAdminsStoredy(){
+	public function getAdminsStored(){
 		return $this->admins_stored;
 	}
 
