@@ -19,6 +19,8 @@ use \ZKLib\User;
 	if ( $ret ):
 		$zk->disable();
 
+	$capacity = $zk->getFreeSize();
+
 	/*
 	$zk->testVoice();
 	$zk->setUser(new User(
@@ -34,6 +36,7 @@ use \ZKLib\User;
 	*/
 	?>
 		<h1>PHP ZK Library</h1>
+		<h2>Clock info</h2>
 		<div class="row">
 		<div class="col col-md-12">
 		<table class="table table-bordered table-hover">
@@ -70,12 +73,49 @@ use \ZKLib\User;
 		</table>
 		</div>
 		</div>
+
+		<h2>Capacity</h2>
 		<div class="row">
 		<div class="col col-md-12">
 		<table class="table table-bordered table-hover">
 			<tr>
-				<th colspan="5">Data User</th>
+				<td><b>Attendance logs available</b></td>
+				<td><?php echo $capacity->getAttLogsAvailable(); ?></td>
+				<td><b>Attendance log capacity</b></td>
+				<td><?php echo $capacity->getAttLogsCapacity(); ?></td>
+				<td><b>Attendance logs stored</b></td>
+				<td><?php echo $capacity->getAttLogsStored(); ?></td>
 			</tr>
+			<tr>
+				<td><b>Templates available</b></td>
+				<td><?php echo $capacity->getTemplatesAvailable(); ?></td>
+				<td><b>Templates capacity</b></td>
+				<td><?php echo $capacity->getTemplatesCapacity(); ?></td>
+				<td><b>Templates stored</b></td>
+				<td><?php echo $capacity->getTemplatesStored(); ?></td>
+			</tr>
+			<tr>
+				<td><b>Users available</b></td>
+				<td><?php echo $capacity->getUsersAvailable(); ?></td>
+				<td><b>Users capacity</b></td>
+				<td><?php echo $capacity->getUsersCapacity(); ?></td>
+				<td><b>Users stored</b></td>
+				<td><?php echo $capacity->getUsersStored(); ?></td>
+			</tr>
+			<tr>
+				<td><b>Admins stored</b></td>
+				<td><?php echo $capacity->getAdminsStored(); ?></td>
+				<td><b>Passwords stored</b></td>
+				<td><?php echo $capacity->getPasswordsStored(); ?></td>
+			</tr>
+		</table>
+		</div>
+		</div>
+
+		<h2>Users</h2>
+		<div class="row">
+		<div class="col col-md-12">
+		<table class="table table-bordered table-hover">
 			<tr>
 				<th>UID</th>
 				<th>ID</th>
@@ -113,12 +153,10 @@ use \ZKLib\User;
 		</div>
 		</div>
 
+		<h2>Attendance data</h2>
 		<div class="row">
 		<div class="col col-md-12">
 		<table class="table table-bordered table-hover">
-			<tr>
-				<th colspan="6">Data Attendance</th>
-			</tr>
 			<tr>
 				<th>UID</th>
 				<th>In / Out</th>
