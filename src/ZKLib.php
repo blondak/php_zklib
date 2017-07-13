@@ -341,10 +341,9 @@ class ZKLib {
 			if ($size === false) {
 				throw new RuntimeException(socket_strerror(socket_last_error()));
 			}
-			$attData .= $data;
+			$attData .= substr($data, 8);
 		} while ($size > 0 && $size != 8);
-		$attData = substr($attData, 12);
-		$attData = substr($attData, 0, -8);
+		$attData = substr($attData, 4);
 
 		$result = array();
 		if ($attData){
@@ -427,10 +426,9 @@ class ZKLib {
 			if ($size === false) {
 				throw new RuntimeException(socket_strerror(socket_last_error()));
 			}
-			$usersData .= $data;
+			$usersData .= substr($data, 8);
 		} while($size > 0 && $size != 8);
-		$usersData = substr($usersData, 12);
-		$usersData = substr($usersData, 0, -8);
+		$usersData = substr($usersData, 4);
 
 		$result = array();
 		if ($usersData){
