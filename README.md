@@ -2,7 +2,9 @@
 
 PHP library for communication with ZKTeco Attendance Machine
 
-Adjustemnts for model ZEM500 (SBTS H0201)
+Adjustemnts for platform ZEM500.
+
+Tested on models SBTS H0201, ZK F707.
 
 ## Install
 
