@@ -1,9 +1,24 @@
 # PHP ZKLib
 
-Attendance Machine Library for PHP with a connection to the network using the UDP protocol and port 4370
+PHP library for communication with ZKTeco Attendance Machine
 
-## Donate bitcoin
+Adjustemnts for platform ZEM500.
 
-![Donate](https://blockr.io/api/v1/address/Qr/1BTsPJFMwSiiQnTusDXUF9YA8Hrm1NLQTD)
+Tested on models SBTS H0201, ZK F707.
 
-1BTsPJFMwSiiQnTusDXUF9YA8Hrm1NLQTD
+## Install
+
+```
+composer require wnasich/php_zklib
+```
+
+## Test connection to your device
+Edit file zktest.php and update the line `$zk = new ZKLib('192.168.1.201');` with your device ip address.
+
+
+### Donations
+```
+Bitcoin : 187w4iNVHX44y2PC96AuhP286aUKNjcrXV
+Litecoin: LVutsPn9jaoC6SScdxsGMM2uAMvPbjNZXq
+PIVX    : D81ZZt8jAvWQFaLhtx3f4ntstUCCYBcdne
+```

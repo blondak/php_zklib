@@ -1,124 +1,190 @@
-<html>
-    <head>
-        <title>ZK Test</title>
-    </head>
-    
-    <body>
 <?php
-    include("ZKLib.php");
-    include("ZKLib/User.php");
-    
-    $zk = new ZKLib("192.168.1.201", 4370);
-    
-    $ret = $zk->connect();
-    if ( $ret ): 
-        $zk->disable();
-    ?>
-        
-        <table border="1" cellpadding="5" cellspacing="2">
-            <tr>
-                <td><b>Status</b></td>
-                <td>Connected</td>
-                <td><b>Version</b></td>
-                <td><?php echo $zk->getVersion() ?></td>
-                <td><b>OS Version</b></td>
-                <td><?php echo $zk->getOs() ?></td>
-                <td><b>Platform</b></td>
-                <td><?php echo $zk->getPlatform() ?></td>
-            </tr>
-            <tr>
-                <td><b>Firmware Version</b></td>
-                <td><?php echo $zk->getPlatformVersion() ?></td>
-                <td><b>WorkCode</b></td>
-                <td><?php echo $zk->getWorkCode() ?></td>
-                <td><b>SSR</b></td>
-                <td><?php echo $zk->getSsr() ?></td>
-                <td><b>Pin Width</b></td>
-                <td><?php echo $zk->getPinWidth() ?></td>
-            </tr>
-            <tr>
-                <td><b>Face Function On</b></td>
-                <td><?php echo $zk->getFaceOn() ?></td>
-                <td><b>Serial Number</b></td>
-                <td><?php echo $zk->getSerialNumber() ?></td>
-                <td><b>Device Name</b></td>
-                <td><?php echo $zk->getDeviceName(); ?></td>
-                <td><b>Get Time</b></td>
-                <td><?php echo $zk->getTime()->format('r') ?></td>
-            </tr>
-        </table>
-        <hr />
-        <table border="1" cellpadding="5" cellspacing="2" style="float: left; margin-right: 10px;">
-            <tr>
-                <th colspan="5">Data User</th>
-            </tr>
-            <tr>
-                <th>UID</th>
-                <th>ID</th>
-                <th>Name</th>
-                <th>Role</th>
-                <th>Password</th>
-		<th>Card number</th>
-            </tr>
-            <?php
-            try {
-                //$zk->clearUsers();
-		//$zk->setUser(\ZKLib\User::construct(1, \ZKLib\User::PRIVILEGE_SUPERADMIN, '1', 'Admin', '', ''));
-		foreach($zk->getUser() as $user):
-		    $role = 'Unknown';
-		    switch ($user->getRole()){
-			case \ZKLib\User::PRIVILEGE_COMMON_USER : $role = 'USER'; break;
-			case \ZKLib\User::PRIVILEGE_ENROLLER    : $role = 'ENROLLER'; break;
-			case \ZKLib\User::PRIVILEGE_MANAGER     : $role = 'MANAGER'; break;
-			case \ZKLib\User::PRIVILEGE_SUPERADMIN  : $role = 'ADMIN'; break;
-		    }
-                ?>
-                <tr>
-                    <td><?php echo $user->getRecordId(); ?></td>
-                    <td><?php echo $user->getUserId(); ?></td>
-                    <td><?php echo $user->getName(); ?></td>
-                    <td><?php echo $role; ?></td>
-                    <td><?php echo $user->getPassword(); ?></td>
-                    <td><?php echo $user->getCardNo(); ?></td>
-                </tr>
-                <?php
-                endforeach;
-            } catch (Exception $e) {
-                header("HTTP/1.0 404 Not Found");
-                header('HTTP', true, 500); // 500 internal server error                
-            }
-            //$zk->clearAdmins();
-            ?>
-        </table>
-        
-        <table border="1" cellpadding="5" cellspacing="2">
-            <tr>
-                <th colspan="6">Data Attendance</th>
-            </tr>
-            <tr>
-                <th>Index</th>
-                <th>UID</th>
-                <th>Type</th>
-                <th>DateTime</th>
-            </tr>
-            <?php
-		foreach($zk->getAttendance() as $attendance):
- 	    ?>
-            <tr>
-                <td><?php echo $attendance->getRecordId(); ?></td>
-                <td><?php echo $attendance->getUserId(); ?></td>
-                <td><?php echo $attendance->getType(); ?></td>
-                <td><?php echo $attendance->getDateTime()->format('r'); ?></td>
-            </tr>
-            <?php
-                endforeach;
-            ?>
-        </table>
-        
-    <?php
-        $zk->enable();
-        $zk->disconnect();
-    endif
+require __DIR__ . '/vendor/autoload.php';
+
+use \ZKLib\ZKLib;
+use \ZKLib\User;
 ?>
-    </body>
+<html>
+	<head>
+		<title>ZK Test</title>
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+	</head>
+
+	<body>
+	<div class="container">
+<?php
+	$zk = new ZKLib('192.168.1.201');
+
+	$ret = $zk->connect();
+	if ( $ret ):
+		$zk->disable();
+
+	$capacity = $zk->getFreeSize();
+
+	/*
+	$zk->testVoice();
+	$zk->setUser(new User(
+		99,
+		User::PRIVILEGE_COMMON_USER,
+		'1234',
+		'User99',
+		'Card99',
+		'1',
+		-3,
+		99
+	));
+	*/
+	?>
+		<h1>PHP ZK Library</h1>
+		<h2>Clock info</h2>
+		<div class="row">
+		<div class="col col-md-12">
+		<table class="table table-bordered table-hover">
+			<tr>
+				<td><b>Status</b></td>
+				<td>Connected</td>
+				<td><b>Version</b></td>
+				<td><?php echo $zk->getVersion() ?></td>
+				<td><b>OS Version</b></td>
+				<td><?php echo $zk->getOs() ?></td>
+				<td><b>Platform</b></td>
+				<td><?php echo $zk->getPlatform() ?></td>
+			</tr>
+			<tr>
+				<td><b>Firmware Version</b></td>
+				<td><?php echo $zk->getPlatformVersion() ?></td>
+				<td><b>WorkCode</b></td>
+				<td><?php echo $zk->getWorkCode() ?></td>
+				<td><b>SSR</b></td>
+				<td><?php echo $zk->getSsr() ?></td>
+				<td><b>Pin Width</b></td>
+				<td><?php echo $zk->getPinWidth() ?></td>
+			</tr>
+			<tr>
+				<td><b>Face Function On</b></td>
+				<td><?php echo $zk->getFaceOn() ?></td>
+				<td><b>Serial Number</b></td>
+				<td><?php echo $zk->getSerialNumber() ?></td>
+				<td><b>Device Name</b></td>
+				<td><?php echo $zk->getDeviceName(); ?></td>
+				<td><b>Get Time</b></td>
+				<td><?php echo $zk->getTime()->format('r') ?></td>
+			</tr>
+		</table>
+		</div>
+		</div>
+
+		<h2>Capacity</h2>
+		<div class="row">
+		<div class="col col-md-12">
+		<table class="table table-bordered table-hover">
+			<tr>
+				<td><b>Attendance logs available</b></td>
+				<td><?php echo $capacity->getAttLogsAvailable(); ?></td>
+				<td><b>Attendance log capacity</b></td>
+				<td><?php echo $capacity->getAttLogsCapacity(); ?></td>
+				<td><b>Attendance logs stored</b></td>
+				<td><?php echo $capacity->getAttLogsStored(); ?></td>
+			</tr>
+			<tr>
+				<td><b>Templates available</b></td>
+				<td><?php echo $capacity->getTemplatesAvailable(); ?></td>
+				<td><b>Templates capacity</b></td>
+				<td><?php echo $capacity->getTemplatesCapacity(); ?></td>
+				<td><b>Templates stored</b></td>
+				<td><?php echo $capacity->getTemplatesStored(); ?></td>
+			</tr>
+			<tr>
+				<td><b>Users available</b></td>
+				<td><?php echo $capacity->getUsersAvailable(); ?></td>
+				<td><b>Users capacity</b></td>
+				<td><?php echo $capacity->getUsersCapacity(); ?></td>
+				<td><b>Users stored</b></td>
+				<td><?php echo $capacity->getUsersStored(); ?></td>
+			</tr>
+			<tr>
+				<td><b>Admins stored</b></td>
+				<td><?php echo $capacity->getAdminsStored(); ?></td>
+				<td><b>Passwords stored</b></td>
+				<td><?php echo $capacity->getPasswordsStored(); ?></td>
+			</tr>
+		</table>
+		</div>
+		</div>
+
+		<h2>Users</h2>
+		<div class="row">
+		<div class="col col-md-12">
+		<table class="table table-bordered table-hover">
+			<tr>
+				<th>UID</th>
+				<th>ID</th>
+				<th>Name</th>
+				<th>Role</th>
+				<th>Password</th>
+				<th>Group</th>
+				<th>TimeZone</th>
+				<th>Card number</th>
+			</tr>
+			<?php
+			try {
+		// $zk->clearUsers();
+		// $zk->setUser(new User(1, User::PRIVILEGE_SUPERADMIN, '1', 'Admin', '', '', -3, 1));
+		foreach($zk->getUsers() as $user): ?>
+				<tr>
+					<td><?php echo $user->getRecordId(); ?></td>
+					<td><?php echo $user->getUserId(); ?></td>
+					<td><?php echo $user->getName(); ?></td>
+					<td><?php echo $user->decodeRole(); ?></td>
+					<td><?php echo $user->getPassword(); ?></td>
+					<td><?php echo $user->getGroupId(); ?></td>
+					<td><?php echo $user->getTimeZone(); ?></td>
+					<td><?php echo $user->getCardNo(); ?></td>
+				</tr>
+				<?php
+				endforeach;
+			} catch (Exception $e) {
+				header("HTTP/1.0 404 Not Found");
+				header('HTTP', true, 500); // 500 internal server error
+			}
+			// $zk->clearAdmins();
+			?>
+		</table>
+		</div>
+		</div>
+
+		<h2>Attendance data</h2>
+		<div class="row">
+		<div class="col col-md-12">
+		<table class="table table-bordered table-hover">
+			<tr>
+				<th>UID</th>
+				<th>In / Out</th>
+				<th>Validated By</th>
+				<th>Status</th>
+				<th>DateTime</th>
+			</tr>
+			<?php
+		foreach($zk->getAttendances() as $attendance):
+		?>
+			<tr>
+				<td><?php echo $attendance->getUserId(); ?></td>
+				<td><?php echo $attendance->isOut() ? 'Out' : 'In'; ?></td>
+				<td><?php echo $attendance->validatedBy(); ?></td>
+				<td><?php echo $attendance->getStatus(); ?></td>
+				<td><?php echo $attendance->getDateTime()->format('r'); ?></td>
+			</tr>
+			<?php
+				endforeach;
+			?>
+		</table>
+		</div>
+
+	<?php
+		$zk->enable();
+		$zk->disconnect();
+	endif
+?>
+	</div>
+	</body>
 </html>

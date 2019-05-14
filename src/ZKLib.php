@@ -1,4 +1,8 @@
 <?php
+namespace ZKLib;
+
+use \DateTime;
+use \RuntimeException;
 
 class ZKLib {
 	const USHRT_MAX = 65535;
@@ -6,31 +10,32 @@ class ZKLib {
 	const CMD_EXIT = 1001;
 	const CMD_ENABLEDEVICE = 1002;
 	const CMD_DISABLEDEVICE = 1003;
+	const CMD_TESTVOICE = 1017;
 	const CMD_ACK_OK = 2000;
 	const CMD_ACK_ERROR = 2001;
 	const CMD_ACK_DATA = 2002;
 	const CMD_ACK_UNAUTH = 2005;
 	const CMD_PREPARE_DATA = 1500;
 	const CMD_DATA = 1501;
-	const CMD_SET_USER = 8;
+	const CMD_USER_WRQ = 8;
 	const CMD_USERTEMP_RRQ = 9;
 	const CMD_DEVICE = 11;
 	const CMD_ATTLOG_RRQ = 13;
 	const CMD_CLEAR_DATA = 14;
 	const CMD_CLEAR_ATTLOG = 15;
-	const CMD_DEL_USER = 18;
+	const CMD_DELETE_USER = 18;
 	const CMD_CLEAR_ADMIN = 20;
-	const CMD_WRITE_LCD = 66;
 	const CMD_GET_TIME = 201;
 	const CMD_SET_TIME = 202;
 	const CMD_VERSION = 1100;
 	const CMD_GET_FREE_SIZES = 50;
+	const CMD_ENABLE_CLOCK = 57;
+	const CMD_WRITE_LCD = 66;
+	const CMD_CLEAR_LCD = 67;
 	const LEVEL_USER = 0;
 	const LEVEL_ADMIN = 14;
 	const DEVICE_GENERAL_INFO_STRING_LENGTH = 184;
-	
-	const TIME_OFFSSET = 936572400;
-	
+
 	/**
 	 * @var $socket
 	 */
@@ -49,7 +54,7 @@ class ZKLib {
 	/**
 	 * @var array
 	 */
-	private $timeout = array('sec'=>60,'usec'=>500000);
+	private $timeout = array('sec'=>30,'usec'=>500000);
 
 	/** @var  string */
 	private $data;
@@ -60,15 +65,13 @@ class ZKLib {
 	/** @var integer */
 	private $reply_id;
 
-	/**
-	 * @var null
-	 */
-	private $result = null;
+	private $response_code;
+	private $checksum;
 
 	public function __construct($ip = '', $port = 4370)
 	{
-		$this->port = $port;
 		$this->ip = $ip;
+		$this->port = $port;
 	}
 
 	/**
@@ -125,24 +128,6 @@ class ZKLib {
 		return $this;
 	}
 
-	/**
-	 * @return null
-	 */
-	public function getResult()
-	{
-		return $this->result;
-	}
-
-	/**
-	 * @param null $result
-	 * @return ZkSocket
-	 */
-	public function setResult($result)
-	{
-		$this->result = $result;
-		return $this;
-	}
-
 	private function createHeader($command, $command_string, $chksum=0) {
 		$buf = pack('SSSS', $command, $chksum, $this->session_id, $this->reply_id).$command_string;
 		$this->reply_id += 1;
@@ -170,7 +155,7 @@ class ZKLib {
 		}
 		return ($checksum & self::USHRT_MAX);
 	}
-	
+
 	function checkValid($reply, $extraResponses = null) {
 		/*Checks a returned packet to see if it returned CMD_ACK_OK, indicating success*/
 		if ($extraResponses){
@@ -181,16 +166,11 @@ class ZKLib {
 
 	public function connect()
 	{
-		try {
-			$this->socket = socket_create(AF_INET, SOCK_DGRAM, SOL_UDP);
-			socket_set_option($this->socket, SOL_SOCKET, SO_RCVTIMEO, $this->timeout);
+		$this->socket = socket_create(AF_INET, SOCK_DGRAM, SOL_UDP);
+		socket_set_option($this->socket, SOL_SOCKET, SO_RCVTIMEO, $this->timeout);
 
-			$this->reply_id = (-1 + self::USHRT_MAX);
-			return $this->execute(self::CMD_CONNECT, null, [self::CMD_ACK_UNAUTH]);
-
-		} catch (\Exception $ex) {
-			return false;
-		}
+		$this->reply_id = (-1 + self::USHRT_MAX);
+		return $this->execute(self::CMD_CONNECT, null, [self::CMD_ACK_UNAUTH]);
 	}
 
 	public function disconnect()
@@ -201,8 +181,6 @@ class ZKLib {
 		}
 	}
 
-	private $response_code;
-	private $checksum;
 	private function unpackResponse(){
 		foreach ($r = unpack('vresponse_code/vchecksum/vsession_id/vreply_id', $this->data) as $key => $value){
 			$this->{$key} = $value;
@@ -211,30 +189,27 @@ class ZKLib {
 
 	private function execute($command, $command_string = null, $extraResponses = array())
 	{
-		try {
-			$buf = $this->createHeader($command, $command_string);
+		$buf = $this->createHeader($command, $command_string);
 
-			socket_sendto($this->socket, $buf, strlen($buf), 0, $this->ip, $this->port);
-			@socket_recvfrom($this->socket, $this->data, 1024, 0, $this->ip, $this->port);
-
-			if ( strlen( $this->data ) > 0 ) {
-				$this->unpackResponse();
-
-				if ($this->checkValid($this->data, $extraResponses) ) {
-					if (strlen($this->data) > 8){
-						if ($command_string){
-							return preg_replace('/^'.preg_quote($command_string, '/').'=/', '', substr( $this->data, 8 ));
-						}
-						return substr( $this->data, 8 );
-					}
-					return true;
-				}
-			}
-		} catch (\Exception $ex) {
-			var_dump($ex->getMessage());
+		socket_sendto($this->socket, $buf, strlen($buf), 0, $this->ip, $this->port);
+		$bytes = socket_recvfrom($this->socket, $this->data, 1024, 0, $this->ip, $this->port);
+		if ($bytes === false) {
+			throw new RuntimeException(socket_strerror(socket_last_error()));
 		}
 
-		return false;
+		if ( strlen( $this->data ) > 0 ) {
+			$this->unpackResponse();
+
+			if ($this->checkValid($this->data, $extraResponses) ) {
+				if (strlen($this->data) > 8){
+					if ($command_string){
+						return preg_replace('/^'.preg_quote($command_string, '/').'=/', '', substr( $this->data, 8 ));
+					}
+					return substr( $this->data, 8 );
+				}
+				return true;
+			}
+		}
 	}
 
 	public function getDeviceName()
@@ -245,6 +220,11 @@ class ZKLib {
 	public function enable()
 	{
 		return $this->execute(self::CMD_ENABLEDEVICE);
+	}
+
+	public function testVoice()
+	{
+		return $this->execute(self::CMD_TESTVOICE);
 	}
 
 	public function disable()
@@ -303,87 +283,92 @@ class ZKLib {
 	public function getTime()
 	{
 		$data = $this->execute(self::CMD_GET_TIME);
-		return \DateTime::createFromFormat('U', current(unpack('V', $data)) + self::TIME_OFFSSET);
+		$encodedTime = current(unpack('V', $data));
+		return $this->decodeTime($encodedTime);
 	}
 
-	private function reverseHex($hexstr) {
-		$tmp = '';
-
-		for ( $i=strlen($hexstr); $i>=0; $i-- ) {
-			$tmp .= substr($hexstr, $i, 2);
-			$i--;
-		}
-
-		return $tmp;
-	}
-
-	public function setTime(\DateTime $dateTime)
+	public function setTime(DateTime $dateTime)
 	{
-		return $this->execute(self::CMD_SET_TIME,  pack('I', $dateTime->getTimestamp() - self::TIME_OFFSSET));
+		return $this->execute(self::CMD_SET_TIME, pack('V', $this->encodeTime($dateTime)));
 	}
 
-	public function clearAttendance(){
-		try {
-			return $this->execute(self::CMD_CLEAR_ATTLOG);
-		} catch (\Exception $ex) {
-			error_log($ex->getMessage());
-		}
+	public function clearAttendances(){
+		return $this->execute(self::CMD_CLEAR_ATTLOG);
 	}
-	
+
 	public function clearUsers(){
-		try {
-			return $this->execute(self::CMD_CLEAR_DATA);
-		} catch (\Exception $ex) {
-			error_log($ex->getMessage());
-		}
+		return $this->execute(self::CMD_CLEAR_DATA);
 	}
 
 	public function clearAdmins(){
-		try {
-			return $this->execute(self::CMD_CLEAR_ADMIN);
-		} catch (\Exception $ex) {
-			error_log($ex->getMessage());
-		}
+		return $this->execute(self::CMD_CLEAR_ADMIN);
 	}
-	
+
 	/**
-	 * 
+	 * writeLcd
+	 * @param integer $line Display line to write 0-3
+	 * @param string $message Message to display. Max len 16
+	 */
+	public function writeLcd($line, $message){
+		$message = str_pad($message, 16);
+		$message = utf8_decode(substr($message, 0, 16));
+		return $this->execute(self::CMD_WRITE_LCD, pack('vCa' . strlen($message), $line, 0x0, $message));
+	}
+
+	public function clearLcd(){
+		return $this->execute(self::CMD_CLEAR_LCD);
+	}
+
+	public function enableClock($flashSeconds){
+		return $this->execute(self::CMD_ENABLE_CLOCK, pack('C', $flashSeconds ? 0x01 : 0x00));
+	}
+
+	/**
+	 *
 	 * @return \ZKLib\Attendance[]
 	 */
-	public function getAttendance()
+	public function getAttendances()
 	{
 		if (($free = $this->getFreeSize()) && !$free->getAttLogsStored()){
 			return array();
 		}
-		if (!defined('__ZKLib_Attendance')){
-			require_once __DIR__.'/ZKLib/Attendance.php';
-		}
-		try {
-			$this->execute(self::CMD_ATTLOG_RRQ);
-			
-			$attData = '';
-			if($size = $this->getPrepareDataSize()) {
-				@socket_recvfrom($this->socket, $attData, $size, MSG_WAITALL, $this->ip, $this->port);
+
+		$this->execute(self::CMD_ATTLOG_RRQ);
+
+		$attData = '';
+		do {
+			$size = socket_recvfrom($this->socket, $data, 1032, MSG_WAITALL, $this->ip, $this->port);
+			if ($size === false) {
+				throw new RuntimeException(socket_strerror(socket_last_error()));
 			}
-			@socket_recvfrom($this->socket, $data, 1024, 0, $this->ip, $this->port);
-			$result = array();
-			if ($attData){
-				foreach (str_split(substr($attData, 10), 40) as $attInfo){
-					$data = unpack('x2/vrecordId/Z16userId/@29/Vtime/ctype', $attInfo);
-					$data['time'] += self::TIME_OFFSSET;
-					$result[$data['recordId']] = \ZKLib\Attendance::construct($data);
+			$attData .= substr($data, 8);
+		} while ($size > 0 && $size != 8);
+		$attData = substr($attData, 4);
+
+		$result = array();
+		if ($attData){
+			foreach (str_split($attData, 8) as $attInfo){
+				if (strlen($attInfo) < 8) {
+					continue;
 				}
+				$data = unpack('vuserId/Ctype/Cstatus/Vtime', $attInfo);
+				$dateTime = $this->decodeTime($data['time']);
+				$result[] = new Attendance(
+					$data['userId'],
+					$dateTime,
+					$data['type'],
+					$data['status']
+				);
 			}
-			return $result;
-						
-		} catch (\Exception $ex) {
-			error_log($ex->getMessage());
 		}
+
+		return $result;
 	}
 
 	private function getPrepareDataSize()
 	{
 		$response = unpack('vcommand/vchecksum/vsession_id/vreply_id/vsize', $this->data);
+
 		return ( $response['command'] == self::CMD_PREPARE_DATA ) ? $response['size'] : false;
 	}
 
@@ -401,71 +386,119 @@ class ZKLib {
 		$s = str_replace(array('`', "'", '"', '^', '~'), '', $s);
 		return strtr($s, "\x01\x02\x03\x04\x05", '`\'"^~');
 	}
-	
-	
+
+	/**
+	 * @param integer $userRecordId
+	 */
+	public function deleteUser($userRecordId){
+		return $this->execute(self::CMD_DELETE_USER, pack('v', $userRecordId));
+	}
+
 	/**
 	 * @param \ZKLib\User $user
 	 */
-	public function setUser($user){
-		return $this->execute(self::CMD_SET_USER, pack('vCa8a24VCx8a9x15', 
+	public function setUser(User $user){
+		return $this->execute(self::CMD_USER_WRQ, pack('vCa5a8a5CsV',
 			$user->getRecordId(),
 			$user->getRole(),
 			$user->getPassword(),
 			$this->func_removeAccents($user->getName()),
 			$user->getCardNo(),
-			1,
+			$user->getGroupId(),
+			$user->getTimeZone(),
 			$user->getUserId()
 		));
 	}
-	
+
 	/**
 	 * @return \ZKLib\User[]
 	 */
-	public function getUser(){
+	public function getUsers(){
 		if (($free = $this->getFreeSize()) && !$free->getUsersStored()){
 			return array();
 		}
-		
-		if (!defined('__ZKLib_User')){
-			require_once __DIR__.'/ZKLib/User.php';
-		}
-		try {
-			$this->execute(self::CMD_USERTEMP_RRQ);
-		
-			$usersData = '';
-			if($size = $this->getPrepareDataSize()) {
-				do {
-					$size -= @socket_recvfrom($this->socket, $data, $size, 0, $this->ip, $this->port);
-					$usersData .= substr($data, 8);
-				} while($size > 0);
+
+		$this->execute(self::CMD_USERTEMP_RRQ);
+
+		$usersData = '';
+		do {
+			$size = socket_recvfrom($this->socket, $data, 1032, 0, $this->ip, $this->port);
+			if ($size === false) {
+				throw new RuntimeException(socket_strerror(socket_last_error()));
 			}
-			@socket_recvfrom($this->socket, $data, 1024, 0, $this->ip, $this->port);
-			$result = array();
-			if ($usersData){
-				foreach (str_split(substr($usersData, 4), 72) as $userInfo){
-					$user = unpack('vrecordId/Crole/Z8password/Z24name/VcardNo/x9/Z9userId', str_pad($userInfo, 72, '\0'));
-					$user['name'] = $user['name'];
-					$result[$user['recordId']] = \ZKLib\User::construct($user); 
+			$usersData .= substr($data, 8);
+		} while($size > 0 && $size != 8);
+		$usersData = substr($usersData, 4);
+
+		$result = array();
+		if ($usersData){
+			foreach (str_split($usersData, 28) as $userInfo){
+				if (strlen($userInfo) < 28) {
+					continue;
 				}
+				$user = unpack('vrecordId/Crole/a5password/a8name/a5cardNo/CgroupId/stimeZone/VuserId', $userInfo);
+				$result[$user['recordId']] = new User(
+					$user['recordId'],
+					$user['role'],
+					$user['password'],
+					$user['name'],
+					$user['cardNo'],
+					$user['groupId'],
+					$user['timeZone'],
+					$user['userId']
+				);
 			}
-			return $result;
-		} catch (\Exception $ex) {
-			error_log($ex->getMessage());
 		}
-		
+		return $result;
 	}
-	
+
 	/**
 	 * @return \ZKLib\Capacity|boolean
 	 */
 	public function getFreeSize()
 	{
 		if (($free_sizes_info = $this->execute(self::CMD_GET_FREE_SIZES)) && is_string($free_sizes_info)) {
-			if (!defined('__ZKLib_Capacity')){
-				require_once __DIR__.'/ZKLib/Capacity.php';
-			}
-			return \ZKLib\Capacity::construct(unpack('x16/Vusers_stored/x4/Vtemplates_stored/x4/Vatt_logs_stored/x12/Vadmins_stored/Vpasswords_stored/Vtemplates_capacity/Vusers_capacity/Vatt_logs_capacity/Vtemplates_available/Vusers_available/Vatt_logs_available', $free_sizes_info));
+			return new Capacity(unpack('x16/Vusers_stored/x4/Vtemplates_stored/x4/Vatt_logs_stored/x12/Vadmins_stored/Vpasswords_stored/Vtemplates_capacity/Vusers_capacity/Vatt_logs_capacity/Vtemplates_available/Vusers_available/Vatt_logs_available', $free_sizes_info));
 		}
 		return false;
+	}
+
+	/**
+	 * @return \DateTime
+	 */
+	public function decodeTime($encodedTime)
+	{
+		$sec = $encodedTime % 60;
+		$encodedTime /= 60;
+
+		$min = $encodedTime % 60;
+		$encodedTime /= 60;
+
+		$hour = $encodedTime % 24;
+		$encodedTime /= 24;
+
+		$day = ($encodedTime % 31) + 1;
+		$encodedTime /= 31;
+
+		$month = ($encodedTime % 12) + 1;
+		$encodedTime /= 12;
+
+		$year = $encodedTime + 2000;
+
+		$decoded = new DateTime();
+		$decoded->setDate($year, $month, $day)
+			->setTime($hour, $min, $sec);
+
+		return $decoded;
+	}
+
+	/**
+	 * @return integer
+	 */
+	public function encodeTime(DateTime $t)
+	{
+		return
+			(($t->format('Y') % 100) * 12 * 31 + (($t->format('n') - 1) * 31) + $t->format('j') - 1) * (24 * 60 * 60) +
+			($t->format('G') * 60 + $t->format('i')) * 60 + $t->format('s');
 	}
 }

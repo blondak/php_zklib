@@ -1,0 +1,14 @@
+{
+    "name": "wnasich/php_zklib",
+    "description": "PHP library for communication with ZKTeco Attendance Machine",
+    "keywords": ["time-attendance", "zkteco", "SBTS H0201"],
+    "homepage": "http://github.com/wnasich/php_zklib",
+    "type": "library",
+    "license": "MIT",
+    "require": {
+        "php": ">=5.3.3"
+    },
+    "autoload": {
+        "psr-4": {"ZKLib\\": "src/"}
+    }
+}
